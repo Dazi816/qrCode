@@ -28,7 +28,7 @@ public class MethodUtils {
         BufferedImage image = MatrixToImageWriter.toBufferedImage(bitMatrix, con);
         
         // Calcola le dimensioni del riquadro bianco al centro
-        int whiteBoxSize = (int) (Math.min(width, height) * 0.135); // Riduci la dimensione del riquadro bianco
+        int whiteBoxSize = (int) (Math.min(width, height) * 0.12); // Riduci la dimensione del riquadro bianco
         int whiteBoxX = (width - whiteBoxSize) / 2;
         int whiteBoxY = (height - whiteBoxSize) / 2;
 
@@ -59,7 +59,7 @@ public class MethodUtils {
         BufferedImage imageWithBorder = addBorder(imageWithLogo, 20, 40, 20, 20, Color.BLUE);
         
         // Aggiunge del testo al bordo
-        addTextToBorder(imageWithBorder, "SCAN MEÓÉ||", Color.WHITE, 20);
+        addTextToBorder(imageWithBorder, "SCAN ME", Color.BLACK, 20);
         
         ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
         ImageIO.write(imageWithBorder, "PNG", pngOutputStream);

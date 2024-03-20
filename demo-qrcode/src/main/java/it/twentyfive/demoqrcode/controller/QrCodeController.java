@@ -33,7 +33,7 @@ public ResponseEntity<ResponseImage> downloadQrCodeBase64(@RequestParam String r
         BufferedImage qrCodeImage = ImageIO.read(new ByteArrayInputStream(qrCodeBytes));
         
         // Leggi i byte del file del logo
-        String imagePath = "img/scan-me.png";
+        String imagePath = "img/phone2.png";
         BufferedImage logo = ImageIO.read(MethodUtils.class.getClassLoader().getResourceAsStream(imagePath));
         
         // Aggiungi il logo all'immagine con il testo

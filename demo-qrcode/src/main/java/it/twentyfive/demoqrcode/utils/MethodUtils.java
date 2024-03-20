@@ -2,6 +2,7 @@ package it.twentyfive.demoqrcode.utils;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
@@ -21,10 +22,11 @@ public class MethodUtils {
 
     public static byte[] generateQrCodeImage(String text, int width, int height, Color qrCodeColor, Color backgroundColor) throws WriterException, IOException {
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        
+    
         BitMatrix bitMatrix = qrCodeWriter.encode(text, BarcodeFormat.QR_CODE, width, height);
         MatrixToImageConfig con = new MatrixToImageConfig(qrCodeColor.getRGB(), backgroundColor.getRGB());
         BufferedImage image = MatrixToImageWriter.toBufferedImage(bitMatrix, con);
+        
         // Calcola le dimensioni del riquadro bianco al centro
         int whiteBoxSize = (int) (Math.min(width, height) * 0.135); // Riduci la dimensione del riquadro bianco
         int whiteBoxX = (width - whiteBoxSize) / 2;
@@ -43,15 +45,25 @@ public class MethodUtils {
         Graphics2D qrGraphics = image.createGraphics();
         qrGraphics.drawImage(overlayImage, 0, 0, null);
         qrGraphics.dispose();
-        BufferedImage imageWithBorder = addBorder(image, 20, Color.BLUE);
-        addTextToBorder(imageWithBorder, "SCAN ME", Color.WHITE, 20, 15);
-        String imagePath = "C:\\Users\\dazi9\\OneDrive\\Desktop\\qr code\\demo-qrcode\\src\\main\\resources\\img\\logo.png";
-        BufferedImage logo = ImageIO.read(new File(imagePath));
+
+        String imagePath = "img/logo.png";
+        BufferedImage logo = ImageIO.read(MethodUtils.class.getClassLoader().getResourceAsStream(imagePath));
+        
+        // Ridimensiona il logo alla stessa dimensione della white box
         logo = resizeImage(logo, whiteBoxSize, whiteBoxSize);
-        BufferedImage imageWithLogo =addLogoToCenter(imageWithBorder, logo);
+        
+        // Aggiunge il logo al centro dell'immagine QR
+        BufferedImage imageWithLogo = addLogoToCenter(image, logo);
+        
+        // Applica il bordo all'immagine QR con il logo
+        BufferedImage imageWithBorder = addBorder(imageWithLogo, 20, 40, 20, 20, Color.BLUE);
+        
+        // Aggiunge del testo al bordo
+        addTextToBorder(imageWithBorder, "SCAN MEÓÉ||", Color.WHITE, 20);
         
         ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        ImageIO.write(imageWithLogo, "PNG", pngOutputStream);
+        ImageIO.write(imageWithBorder, "PNG", pngOutputStream);
+        
         return pngOutputStream.toByteArray();
     }
     public static BufferedImage resizeImage(BufferedImage originalImage, int targetWidth, int targetHeight) {
@@ -75,21 +87,38 @@ public class MethodUtils {
         return imageWithLogo;
     }
 
-    public static BufferedImage addBorder(BufferedImage img, int borderSize, Color borderColor) {
+    public static BufferedImage addBorder(BufferedImage img, int topBorderSize, int bottomBorderSize, int leftBorderSize, int rightBorderSize, Color borderColor) {
+        int newWidth = img.getWidth() + leftBorderSize + rightBorderSize;
+        int newHeight = img.getHeight() + topBorderSize + bottomBorderSize;
 
-        BufferedImage imgWithBorder = new BufferedImage(img.getWidth() + 2*borderSize, img.getHeight() +  2*borderSize, BufferedImage.TYPE_INT_RGB);
+        BufferedImage imgWithBorder = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = imgWithBorder.createGraphics();
         g.setColor(borderColor);
-        g.fillRect(0, 0, imgWithBorder.getWidth(), imgWithBorder.getHeight());
-        g.drawImage(img, borderSize, borderSize, null);
+        g.fillRect(0, 0, newWidth, newHeight);
+        g.drawImage(img, leftBorderSize, topBorderSize, null);
         g.dispose();
-    
+
         return imgWithBorder;
     }
-    public static void addTextToBorder(BufferedImage img, String text, Color textColor, int x, int y) {
+    public static void addTextToBorder(BufferedImage img, String text, Color textColor, int fontSize) {
         Graphics2D g = img.createGraphics();
+        Font font = new Font("Arial", Font.BOLD, fontSize);
         g.setColor(textColor);
-        g.setFont(new Font("Arial", Font.BOLD, 14));
+        g.setFont(font);
+
+        // Calcola la larghezza del testo
+        FontMetrics fontMetrics = g.getFontMetrics(font);
+        int textWidth = fontMetrics.stringWidth(text);
+        //Calcola l'altezza della lettera più alta del testo
+        int maxHeight = 0;
+            for (int i = 0; i < text.length(); i++) {
+                int charHeight = fontMetrics.getAscent() - fontMetrics.getDescent();
+                maxHeight = Math.max(maxHeight, charHeight);
+            }
+        // Calcola le coordinate x e y per posizionare il testo al centro del bordo inferiore
+        int x = (img.getWidth() - textWidth) / 2;
+        int y = img.getHeight()-20+(maxHeight/2);
+
         g.drawString(text, x, y);
         g.dispose();
     }
